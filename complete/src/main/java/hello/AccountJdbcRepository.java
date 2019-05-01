@@ -1,6 +1,7 @@
 package hello;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.SQLWarningException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,7 +20,6 @@ public class AccountJdbcRepository {
     public AccountJdbcRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate=jdbcTemplate;
     }
-//    JdbcTemplate jdbcTemplate = ApplicationContextHolder.getContext().getBean(JdbcTemplate.class);
 
 
     class AccountRowMapper implements RowMapper< Account > {
@@ -33,19 +33,37 @@ public class AccountJdbcRepository {
         }
     }
 
-    public Account findById(long id) {
-//        jdbcTemplate.findById()
-//        jdbcTemplate.
-//        System.out.println("hello world");
-//        System.out.println("1zjdosdhj " + jdbcTemplate.getFetchSize());
-//        System.out.println("sdko39392 " + jdbcTemplate.getMaxRows());
-//        jdbcTemplate.query();
-//
-//        jdbcTemplate.query(
-//                "SELECT id, first_name, last_name FROM customers WHERE first_name = ?", new Object[] { "Josh" },
-//                (rs, rowNum) -> new Account(rs.getLong("id"), rs.getString("name"), rs.getString("last_name"))
-//        ).forEach(customer -> log.info(customer.toString()));
+    public RequestResponse processSendRequest(int amountSending) {
+        //clear table first
+        jdbcTemplate.update(
+                "DELETE FROM pendingtransaction"
+        );
 
+        //add request to temp table
+        jdbcTemplate.update(
+                "INSERT INTO pendingtransaction (type, amount) VALUES (?, ?)",
+                "send", amountSending
+        );
+
+        if (jdbcTemplate.query("select * from pendingtransaction", )){
+            jdbcTemplate.
+        }
+        int id = 1;
+
+        try {
+            //will throw error if transaction didn't insert
+            jdbcTemplate.queryForObject("select * from pendingtransaction", new Object[] {
+                    },
+                    new BeanPropertyRowMapper< PendingTransaction >(PendingTransaction.class));
+
+
+        } catch (NullPointerException a) {
+            //nothing found, abort
+        }
+        //validate insert, and create response to return
+    }
+
+    public Account findById(long id) {
         return jdbcTemplate.queryForObject("select * from account where id=?", new Object[] {
                         id
                 },
@@ -53,7 +71,6 @@ public class AccountJdbcRepository {
     }
 
     public List< Account > findAll() {
-//        jdbcTemplate.
         return jdbcTemplate.query("select * from account", new AccountRowMapper());
     }
 }
