@@ -1,45 +1,46 @@
 package hello;
 
 public class PendingTransaction {
-    private Long id;
-    private String name;
-    private Long balance;
+    private Long change;
+    private Long proposedBalance;
 
     public PendingTransaction() {
         super();
     }
-    public PendingTransaction(Long id, String name, Long balance) {
+    public PendingTransaction(Long change, Long proposedBalance) {
         super();
-        this.id = id;
-        this.name = name;
-        this.balance = balance;
+        this.change = change;
+        this.proposedBalance = proposedBalance;
+//        this.balance = balance;
     }
 
-    public PendingTransaction(String name, Long balance) {
-        super();
-        this.name = name;
-        this.balance = balance;
+//    public PendingTransaction(String name, Long balance) {
+//        super();
+//        this.name = name;
+//        this.balance = balance;
+//    }
+    public Long getChange() {
+        return change;
     }
-    public Long getId() {
-        return id;
+    public void setChange(Long change) {
+        this.change = change;
     }
-    public void setId(Long id) {
-        this.id = id;
+
+//    public String getName() {
+//        return name;
+//    }
+//    public void setName(String name) {
+//        this.name = name;
+//    }
+
+    public Long getProposedBalance() {
+        return proposedBalance;
     }
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-    public Long getBalance() {
-        return balance;
-    }
-    public void setBalance(Long balance) {
-        this.balance = balance;
+    public void setProposedBalance(Long proposedBalance) {
+        this.proposedBalance = proposedBalance;
     }
     @Override
     public String toString() {
-        return String.format("Student [id=%s, name=%s, balance=%s]", id, name, balance);
+        return String.format("Student [change=%s, proposedBalance=%s]", change, proposedBalance);
     }
 }

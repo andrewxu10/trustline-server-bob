@@ -1,6 +1,7 @@
 package hello;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.SQLWarningException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.RowMapper;
@@ -33,35 +34,67 @@ public class AccountJdbcRepository {
         }
     }
 
-    public RequestResponse processSendRequest(int amountSending) {
+    public RequestResponse processTransactionRequest(Long transactionAmount, String transactionType) {
+
+        if(transactionType == "send") { transactionAmount = transactionAmount * -1; }
+
         //clear table first
         jdbcTemplate.update(
                 "DELETE FROM pendingtransaction"
         );
 
+        Long currentBalance = getCurrentBalance();
+
         //add request to temp table
+        try {
+            Long proposedBalance = currentBalance + transactionAmount;
+            jdbcTemplate.update(
+                    "INSERT INTO pendingtransaction (change, proposedBalance) VALUES (?, ?)",
+                    transactionAmount, proposedBalance//amountSending
+            );
+            //build success response, which is returned
+            return new RequestResponse(true, proposedBalance, transactionType);
+
+        } catch (DataAccessException a) {
+
+            //abort if can't insert
+            jdbcTemplate.update(
+                    "DELETE FROM pendingtransaction"
+            );
+
+            //build error Response, which is returned
+            return new RequestResponse(false, currentBalance, transactionType);
+        }
+    }
+
+    public Long getCurrentBalance() {
+        return jdbcTemplate.queryForObject("select * from account", new Object[] {
+                },
+                new BeanPropertyRowMapper< Account >(Account.class))
+                .getBalance();
+    }
+
+    public Long confirmTransactionRequest() {
+        Long newBalance = jdbcTemplate.queryForObject("select * from pendingTransaction", new Object[] {
+                },
+                new BeanPropertyRowMapper< PendingTransaction >(PendingTransaction.class))
+                .getProposedBalance();
         jdbcTemplate.update(
-                "INSERT INTO pendingtransaction (type, amount) VALUES (?, ?)",
-                "send", amountSending
+                "UPDATE account SET balance = (?)",
+                newBalance
         );
 
-        if (jdbcTemplate.query("select * from pendingtransaction", )){
-            jdbcTemplate.
-        }
-        int id = 1;
+        jdbcTemplate.update(
+                "DELETE FROM pendingtransaction"
+        );
 
-        try {
-            //will throw error if transaction didn't insert
-            jdbcTemplate.queryForObject("select * from pendingtransaction", new Object[] {
-                    },
-                    new BeanPropertyRowMapper< PendingTransaction >(PendingTransaction.class));
-
-
-        } catch (NullPointerException a) {
-            //nothing found, abort
-        }
-        //validate insert, and create response to return
+        return newBalance;
     }
+
+
+
+
+
 
     public Account findById(long id) {
         return jdbcTemplate.queryForObject("select * from account where id=?", new Object[] {

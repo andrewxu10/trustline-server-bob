@@ -24,15 +24,36 @@ public class GreetingController {
     }
 
     @RequestMapping("/sendRequest")
-    public RequestResponse sendRequest(@RequestParam(value="amountSending") int amountSending) {
+    public RequestResponse sendRequest(@RequestParam(value="amountSending") Long amountSending) {
         AccountJdbcRepository n = new AccountJdbcRepository(jdbcTemplate);
-//        Account a = n.findById(1L);
-
-        requestResponse response = n.processSendRequest(amountSending);
+        RequestResponse response = n.processTransactionRequest(amountSending, "send");
+        System.out.println("Sending $" + amountSending);
+        return response;
     }
 
+    @RequestMapping("/receiveRequest")
+    public RequestResponse receiveRequest(@RequestParam(value="amountReceiving") Long amountReceiving) {
+        AccountJdbcRepository n = new AccountJdbcRepository(jdbcTemplate);
+        RequestResponse response = n.processTransactionRequest(amountReceiving,"receive");
+        System.out.println("Received $" + amountReceiving);
+        return response;
+    }
 
+    @RequestMapping("/getCurrentBalance")
+    public Long getCurrentBalance() {
+        AccountJdbcRepository n = new AccountJdbcRepository(jdbcTemplate);
+        Long response = n.getCurrentBalance();
+        return response;
+    }
 
+    @RequestMapping("/confirmTransaction")
+    public Long confirmTransaction() { //@RequestParam(value="diffValue")Long diffValue, @RequestParam(value="currentBalance") Long currentBalance
+        AccountJdbcRepository n = new AccountJdbcRepository(jdbcTemplate);
+        Long updatedBalance = n.confirmTransactionRequest();
+//        updatedBalance = 1L;
+        System.out.println("Current balance is $" + n.getCurrentBalance());
+        return updatedBalance;
+    }
 
 
 
